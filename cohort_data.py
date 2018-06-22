@@ -188,14 +188,34 @@ def find_name_duplicates(filename):
 
     For example:
     >>> find_name_duplicates("cohort_data.txt")
-    set(['Weasley'])
+    {'Weasley'}
 
     """
 
     duplicate_names = set()
+    winter_16 = set()
+    spring_16 = set()
+    summer_16 = set()
+    fall_15 = set()
 
-    # Code goes here
+    file = open(filename)
 
+    for line in file:
+        line = line.rstrip()
+        line = line.split("|")
+        cohort = line[-1]
+        name = line[1]
+
+        if line[-1] == "Winter 2016":
+            winter_16.add(name)
+        elif line[-1] == "Spring 2016":
+            spring_16.add(name)
+        elif line[-1] == "Summer 2016":
+            summer_16.add(name)
+        elif line[-1] == "Fall 2015":
+            fall_15.add(name)
+
+    duplicate_names = winter_16 & spring_16 & summer_16 & fall_15
     return duplicate_names
 
 
