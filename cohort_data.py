@@ -13,14 +13,15 @@ def unique_houses(filename):
     ["Dumbledore's Army", 'Gryffindor', 'Hufflepuff', 'Ravenclaw', 'Slytherin']
 
     """
-    file = open(filename)
-
+    f = open(filename)
     houses = set()
-    for line in file:
-        line = line.split("|")
+
+    for line in f:
+        line = line.rstrip().split("|")
         house = line[2]
-        houses.add(house)
-    houses.remove("")
+        if house not in (""):
+            houses.add(house)
+    f.close()
     return houses
 
 
@@ -45,24 +46,25 @@ def sort_by_cohort(filename):
     fall_15 = []
     ghosts = []
 
-    file = open(filename)
+    f = open(filename)
 
-    for line in file:
-        line = line.rstrip()
-        line = line.split("|")
-        name = line[0] + " " + line[1]
+    for line in f:
+        first, last, _, _, cohort = line.rstrip().split('|')
+        name = first + ' ' + last
 
-        if line[-1] == "Winter 2016":
+        if cohort == "Winter 2016":
             winter_16.append(name)
-        elif line[-1] == "Spring 2016":
+        elif cohort == "Spring 2016":
             spring_16.append(name)
-        elif line[-1] == "Summer 2016":
+        elif cohort == "Summer 2016":
             summer_16.append(name)
-        elif line[-1] == "Fall 2015":
+        elif cohort == "Fall 2015":
             fall_15.append(name)
-        elif line[-1] == "G":
+        elif cohort == "G":
             ghosts.append(name)
-    all_students = [fall_15] + [winter_16] + [spring_16] + [summer_16] + [ghosts]
+    all_students = [fall_15, winter_16, spring_16, summer_16, ghosts]
+
+    f.close()
     return all_students
 
 
@@ -89,28 +91,28 @@ def hogwarts_by_house(filename):
     ghosts = []
     instructors = []
 
-    file = open(filename)
+    f = open(filename)
 
-    for line in file:
-        line = line.rstrip()
-        line = line.split("|")
-        name = line[1]
-        house = line[2]
+    for line in f:
+
+        first, last, house, instructor, cohort = line.rstrip().split('|')
+
         if house == "Dumbledore's Army":
-            dumbledores_army.append(name)
+            dumbledores_army.append(last)
         elif house == "Gryffindor":
-            gryffindor.append(name)
+            gryffindor.append(last)
         elif house == "Hufflepuff":
-            hufflepuff.append(name)
+            hufflepuff.append(last)
         elif house == "Ravenclaw":
-            ravenclaw.append(name)
+            ravenclaw.append(last)
         elif house == "Slytherin":
-            slytherin.append(name)
-        elif line[4] == "G":
-            ghosts.append(name)
-        elif line[4] == "I":
-            instructors.append(name)
-    all_hogwarts = [sorted(dumbledores_army)] + [sorted(gryffindor)] + [sorted(hufflepuff)] + [sorted(ravenclaw)] + [sorted(slytherin)] + [sorted(ghosts)] + [sorted(instructors)]
+            slytherin.append(last)
+        elif cohort == "G":
+            ghosts.append(last)
+        elif cohort == "I":
+            instructors.append(last)
+    all_hogwarts = [sorted(dumbledores_army), sorted(gryffindor), sorted(hufflepuff), sorted(ravenclaw), sorted(slytherin), sorted(ghosts), sorted(instructors)]
+    f.close()
     return all_hogwarts
 
 
@@ -128,26 +130,22 @@ def all_students_tuple_list(filename):
     """
 
     student_list = []
+    f = open(filename)
 
-    file = open(filename)
+    for line in f:
+        first, last, house, instructor, cohort = line.rstrip().split('|')
+        name = first + " " + last
+        student_info = (name, house, instructor, cohort)
 
-    for line in file:
-        line = line.rstrip()
-        line = line.split("|")
-        name = line[0] + " " + line[1]
-        house = line[2]
-        advisor = line[3]
-        cohort = line[-1]
-        student_info = (name, house, advisor, cohort)
-
-        if cohort == "G" or cohort == "I":
-            continue
-        else:
+        if cohort not in ("G", "I"):
             student_list.append(student_info)
+
+    f.close()
     return student_list
 
 
 all_students_data = all_students_tuple_list("cohort_data.txt")
+
 
 def find_cohort_by_student_name(student_list):
     """TODO: Given full name, return student's cohort.
@@ -198,24 +196,21 @@ def find_name_duplicates(filename):
     summer_16 = set()
     fall_15 = set()
 
-    file = open(filename)
+    f = open(filename)
 
-    for line in file:
-        line = line.rstrip()
-        line = line.split("|")
-        cohort = line[-1]
-        name = line[1]
-
-        if line[-1] == "Winter 2016":
-            winter_16.add(name)
-        elif line[-1] == "Spring 2016":
-            spring_16.add(name)
-        elif line[-1] == "Summer 2016":
-            summer_16.add(name)
-        elif line[-1] == "Fall 2015":
-            fall_15.add(name)
+    for line in f:
+        first, last, _, _, cohort = line.rstrip().split("|")
+        if cohort == "Winter 2016":
+            winter_16.add(last)
+        elif cohort == "Spring 2016":
+            spring_16.add(last)
+        elif cohort == "Summer 2016":
+            summer_16.add(last)
+        elif cohort == "Fall 2015":
+            fall_15.add(last)
 
     duplicate_names = winter_16 & spring_16 & summer_16 & fall_15
+    f.close()
     return duplicate_names
 
 
@@ -245,21 +240,40 @@ def find_house_members_by_student_name(student_list):
 
      """
 
-    # Code goes here
+    name = input("Choose a student: ")
+    all_in_house = set()
+    all_in_cohort = set()
+    same_house_and_cohort = set()
 
-    return
+    for student in student_list:
+        full_name, house, _, cohort = student
+        if full_name == name:
+            name_house = house
+            name_cohort = cohort
+            break
+    for student in student_list:
+        if house == name_house:
+            all_in_house.add(full_name)
+        if cohort == name_cohort:
+            all_in_cohort.add(full_name)
+
+    same_house_and_cohort = all_in_house & all_in_cohort
+    same_house_and_cohort.remove(name)
+    print("{} was in {} house in the {}.".format(name, name_house, name_cohort))
+    print("The following students were in the same house and cohort:")   
+    for each in same_house_and_cohort:
+        print(each)
 
 
 #############################################################################
 # Here is some useful code to run these functions without doctests!
 
-find_cohort_by_student_name(all_students_data)
-find_house_members_by_student_name(all_students_data)
+# find_cohort_by_student_name(all_students_data)
+#find_house_members_by_student_name(all_students_data)
 
 ##############################################################################
 # END OF MAIN EXERCISE.  Yay!  You did it! You Rock!
 #
-
 
 
 if __name__ == "__main__":
